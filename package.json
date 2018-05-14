@@ -1,0 +1,21 @@
+{
+  "name": "ts-study",
+  "version": "1.0.0",
+  "main": "app.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "npm run build && npm run serve",
+    "start:dev": "tsc -w & npm run serve:dev",
+    "serve": "node dist/server/app.js",
+    "serve:dev": "node-dev dist/server/app.js",
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/express": "^4.11.1",
+    "@types/node": "^10.0.6"
+  },
+  "dependencies": {
+    "express": "^4.16.3",
+    "typescript": "^2.8.3"
+  }
+}

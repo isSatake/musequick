@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "lib": [ "ES6" ], //使いたいjsバージョン
+    "target": "es5",  //コンパイル後のjsバージョン
+    "sourceMap": true,
+    "rootDir": "src", //コンパイル元ディレクトリ
+    "outDir": "dist" //コンパイル元のディレクトリ構造は維持される
+  }
+}
