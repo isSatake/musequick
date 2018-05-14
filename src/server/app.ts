@@ -29,7 +29,7 @@ app.get('/img/q', async (req, res) => {
 
 const getPng = async (input) => {
   console.log(input)
-  await writeFile('test.ly', input)
+  await writeFile('test.ly', input + '\\header{tagline=""}')
   await exec('lilypond -fpng -dresolution=200 test.ly')
   await exec('convert test.png -trim +repage -splice 10x10 -gravity southeast -splice 10x10 out.png')
 
