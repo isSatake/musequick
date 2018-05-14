@@ -1,7 +1,9 @@
 import * as express from 'express';
 import * as http from 'http';
-const util = require('util')
+import * as md5 from 'md5';
+import * as util from 'util';
 const writeFile = util.promisify(require('fs').writeFile)
+const unlink = util.promisify(require('fs').unlink)
 const exec = util.promisify(require('child_process').exec)
 const app: express.Express = express();
 
@@ -14,25 +16,23 @@ const server = http.createServer(app);
 server.listen(port);
 
 app.get('/q', async (req, res) => {
-  const base64 = await getPng(req.query.li).catch((err) => {
+  const input = req.query.li.split(".png")[0]
+  const fileName = md5(`${Date.now()} ${input}`)
+  await generatePng(input, fileName).catch((err) => {
     res.send(err.stderr).status(404).end()
   })
-  res.send(base64).status(200).end()
+  res.sendFile(__dirname + `/${fileName}.png`, () => { deleteFiles(fileName) })
 })
 
-app.get('/img/q', async (req, res) => {
-  const base64 = await getPng(req.query.li).catch((err) => {
-    res.send(err.stderr).status(404).end()
-  })
-  res.send(`<img src="data:image/png;base64,${base64}">`).status(200).end()
-})
+const generatePng = async (input, fileName) => {
+  console.log(`${input} ${fileName}.png`)
+  await writeFile(`${fileName}.ly`, `${input}\\header{tagline=""}`)
+  await exec(`lilypond -fpng -dresolution=200 ${fileName}.ly`)
+  await exec(`convert ${fileName}.png -trim +repage -splice 10x10 -gravity southeast -splice 10x10 ./dist/server/${fileName}.png`)
+}
 
-const getPng = async (input) => {
-  console.log(input)
-  await writeFile('test.ly', input + '\\header{tagline=""}')
-  await exec('lilypond -fpng -dresolution=200 test.ly')
-  await exec('convert test.png -trim +repage -splice 10x10 -gravity southeast -splice 10x10 out.png')
-
-  const { stdout } = await exec('base64 out.png')
-  return stdout
+const deleteFiles = (fileName) => {
+  unlink(`${fileName}.ly`)
+  unlink(`${fileName}.png`)
+  unlink(`./dist/server/${fileName}.png`)
 }
