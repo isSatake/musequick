@@ -26,7 +26,7 @@ app.get('/q', async (req, res) => {
 
 const generatePng = async (input, fileName) => {
   console.log(`${input} ${fileName}.png`)
-  await writeFile(`${fileName}.ly`, `${input}\\header{tagline=""}`)
+  await writeFile(`${fileName}.ly`, `{${input}}\\header{tagline=""}`)
   await exec(`lilypond -fpng -dresolution=200 ${fileName}.ly`)
   await exec(`convert ${fileName}.png -trim +repage -splice 10x10 -gravity southeast -splice 10x10 ./dist/server/${fileName}.png`)
 }
