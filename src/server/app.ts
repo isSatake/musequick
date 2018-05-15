@@ -2,6 +2,14 @@ import * as express from 'express';
 import * as http from 'http';
 import * as md5 from 'md5';
 import * as util from 'util';
+import * as dotenv from 'dotenv';
+
+dotenv.load()
+
+const PATH_LILYPOND = process.env.PATH_LILYPOND || "lilypond"
+const PATH_CONVERT = process.env.PATH_CONVERT || "convert"
+const PATH_TIMIDITY = process.env.PATH_TIMIDITY || "timidity"
+const PATH_LAME = process.env.PATH_LAME || "lame"
 
 const writeFile = util.promisify(require('fs').writeFile)
 const exec = util.promisify(require('child_process').exec)
@@ -38,17 +46,17 @@ app.get('/q', async (req, res) => {
 })
 
 const generateMp3 = async (input, fileName, tempo) => {
-    console.log(`MP3: ${input} ${fileName}.png`)
+    console.log(`MP3: ${input} ${fileName}.mp3`)
     await writeFile(`${fileName}.ly`, `\\score{{${input}}\\midi{\\tempo4=${tempo}}}`)
-    await exec(`/Users/stk/bin/lilypond ${fileName}.ly`)
-    await exec(`timidity ${fileName}.midi -Ow -o - | lame - -b 64 ./dist/server/${fileName}.mp3`)
+    await exec(`${PATH_LILYPOND} ${fileName}.ly`)
+    await exec(`${PATH_TIMIDITY} ${fileName}.midi -Ow -o - | ${PATH_LAME} - -b 64 ./dist/server/${fileName}.mp3`)
 }
 
 const generatePng = async (input, fileName) => {
     console.log(`PNG: ${input} ${fileName}.png`)
     await writeFile(`${fileName}.ly`, `{${input}}\\header{tagline=""}`)
-    await exec(`/Users/stk/bin/lilypond -fpng -dresolution=200 ${fileName}.ly`)
-    await exec(`convert ${fileName}.png -trim +repage -splice 10x10 -gravity southeast -splice 10x10 ./dist/server/${fileName}.png`)
+    await exec(`${PATH_LILYPOND} -fpng -dresolution=200 ${fileName}.ly`)
+    await exec(`${PATH_CONVERT} ${fileName}.png -trim +repage -splice 10x10 -gravity southeast -splice 10x10 ./dist/server/${fileName}.png`)
 }
 
 const deleteFiles = (fileName) => {
