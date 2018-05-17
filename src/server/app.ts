@@ -25,7 +25,7 @@ server.listen(port);
 
 app.get('/q', async (req, res) => {
     const query = req.query.li.split(/\.(png|mp3)/)
-    const extension = query[1]
+    const extension = query[1] || "png"
     const fileName = md5(`${Date.now()} ${query[0]}`)
 
     try {
