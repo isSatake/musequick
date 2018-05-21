@@ -40,26 +40,25 @@ app.get('/q', async (req, res) => {
         return
     }
 
-    res.sendFile(__dirname + `/${fileName}.${extension}`, () => {
+    res.sendFile(`${fileName}.${extension}`, { root: __dirname }, () => {
         deleteFiles(fileName)
     })
 })
 
 const generateMp3 = async (input, fileName, tempo) => {
     console.log(`MP3: ${input} ${fileName}.mp3`)
-    await writeFile(`${fileName}.ly`, `\\score{{${input}}\\midi{\\tempo4=${tempo}}}`)
-    await exec(`${PATH_LILYPOND} ${fileName}.ly`)
-    await exec(`${PATH_TIMIDITY} ${fileName}.midi -Ow -o - | ${PATH_LAME} - -b 64 ./dist/server/${fileName}.mp3`)
+    await writeFile(`${__dirname}/${fileName}.ly`, `\\score{{${input}}\\midi{\\tempo4=${tempo}}}`)
+    await exec(`${PATH_LILYPOND}  -o ${__dirname} ${__dirname}/${fileName}.ly`)
+    await exec(`${PATH_TIMIDITY} ${__dirname}/${fileName}.midi -Ow -o - | ${PATH_LAME} - -b 64 ${__dirname}/${fileName}.mp3`)
 }
 
 const generatePng = async (input, fileName) => {
     console.log(`PNG: ${input} ${fileName}.png`)
-    await writeFile(`${fileName}.ly`, `{${input}}\\header{tagline=""}`)
-    await exec(`${PATH_LILYPOND} -fpng -dresolution=200 ${fileName}.ly`)
-    await exec(`${PATH_CONVERT} ${fileName}.png -trim +repage -splice 10x10 -gravity southeast -splice 10x10 ./dist/server/${fileName}.png`)
+    await writeFile(`${__dirname}/${fileName}.ly`, `{${input}}\\header{tagline=""}`)
+    await exec(`${PATH_LILYPOND} -fpng -dresolution=200 -o ${__dirname} ${__dirname}/${fileName}.ly`)
+    await exec(`${PATH_CONVERT} ${__dirname}/${fileName}.png -trim +repage -splice 10x10 -gravity southeast -splice 10x10 ${__dirname}/${fileName}.png`)
 }
 
 const deleteFiles = (fileName) => {
-    exec(`rm ${fileName}.*`)
-    exec(`rm ./dist/server/${fileName}.*`)
+    exec(`rm ${__dirname}/${fileName}.*`)
 }
