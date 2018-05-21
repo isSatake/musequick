@@ -3,6 +3,7 @@ import * as http from 'http';
 import * as md5 from 'md5';
 import * as util from 'util';
 import * as dotenv from 'dotenv';
+import {convertJPNtoEN} from "./tools";
 
 dotenv.load()
 
@@ -30,9 +31,9 @@ app.get('/q', async (req, res) => {
 
     try {
         if(extension === "mp3"){
-            await generateMp3(query[0], fileName, 200)
+            await generateMp3(convertJPNtoEN(query[0]), fileName, 200)
         }else{
-            await generatePng(query[0], fileName)
+            await generatePng(convertJPNtoEN(query[0]), fileName)
         }
     }catch (err) {
         res.send(err.stderr).status(404).end()
