@@ -1,10 +1,10 @@
 {
-  "name": "ts-study",
+  "name": "musequick",
   "version": "1.0.0",
   "main": "app.js",
   "license": "MIT",
   "scripts": {
-    "start": "npm run build && npm run serve",
+    "start": "npm run serve",
     "start:dev": "tsc -w & npm run serve:dev",
     "serve": "node dist/server/app.js",
     "serve:dev": "node-dev dist/server/app.js",
