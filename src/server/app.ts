@@ -28,10 +28,11 @@ app.get('/q', async (req, res) => {
     const query = req.query.li.split(/\.(png|mp3)/);
     const extension = query[1] || "png";
     const fileName = md5(`${Date.now()} ${query[0]}`);
+    const tempo = req.query.tempo;
 
     try {
         if(extension === "mp3"){
-            await generateMp3(convertJPNtoEN(query[0]), fileName, 200)
+            await generateMp3(convertJPNtoEN(query[0]), fileName, tempo || 100)
         }else{
             await generatePng(convertJPNtoEN(query[0]), fileName)
         }
