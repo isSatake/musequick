@@ -21,6 +21,5 @@ export const convertJPNtoEN = (input: any) => {
             result = result.concat(str);
         }
     }
-    console.log(`converted: ${result}`);
     return result
 };

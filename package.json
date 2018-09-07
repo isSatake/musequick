@@ -15,6 +15,7 @@
     "@types/node": "^10.0.6"
   },
   "dependencies": {
+    "cloudinary": "^1.11.0",
     "dotenv": "^5.0.1",
     "express": "^4.16.3",
     "md5": "^2.2.1",
