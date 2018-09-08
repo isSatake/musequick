@@ -1,13 +1,15 @@
+import * as dotenv from 'dotenv';
+
+dotenv.load();
+
 import * as express from 'express';
 import * as http from 'http';
 import * as md5 from 'md5';
 import * as util from 'util';
-import * as dotenv from 'dotenv';
 import * as cloudinary from "cloudinary";
 import {convertJPNtoEN} from "./tools";
 import {IncomingMessage} from "http";
 
-dotenv.load();
 
 const writeFile = util.promisify(require('fs').writeFile);
 const exec = util.promisify(require('child_process').exec);
@@ -30,34 +32,34 @@ app.get('/q', async (req, res) => {
     const tempo = req.query.tempo;
     console.log(`hash: ${fileName}`, `query: ${lyQuery}`);
 
-    if(extension === "mp3"){
+    if (extension === "mp3") {
         await generateMp3(lyQuery, fileName, tempo || 200);
-        return res.sendFile(`${fileName}.mp3`, { root: __dirname }, () => {
+        return res.sendFile(`${fileName}.mp3`, {root: __dirname}, () => {
             deleteFiles(fileName);
         })
     }
 
-    try {
-        return (await getPngCache(url)).pipe(res);
-    } catch (e) {
+    const stream: IncomingMessage = await getPngCache(url).catch(async (err) => {
+        console.log(err.message);
         await generatePng(lyQuery, fileName);
         await uploadPng(`${__dirname}/${fileName}.png`);
-        http.get(url, imageRes => {
-            imageRes.pipe(res);
-            deleteFiles(fileName);
-        });
-    }
+        const res = await httpget(url);
+        deleteFiles(fileName);
+        return res;
+    });
+    return stream.pipe(res);
 });
 
-const getPngCache = (url: string): Promise<IncomingMessage> => new Promise((resolve, reject) => {
-    http.get(url, (imageRes) => {
-        const {statusCode, statusMessage} = imageRes;
-        if (statusCode === 404) return reject("Image not found");
-        if (statusCode !== 200) return reject(`HTTP error: ${statusCode} ${statusMessage}`);
-        console.log("Use cache");
-        return resolve(imageRes);
-    });
-});
+const httpget = (url: string): Promise<IncomingMessage> => new Promise(resolve => http.get(url, resolve));
+
+const getPngCache = async (url: string): Promise<IncomingMessage> => {
+    const res = await httpget(url);
+    const {statusCode, statusMessage} = res;
+    if (statusCode === 404) throw new Error("Image not found");
+    if (statusCode !== 200) throw new Error(`HTTP error: ${statusCode} ${statusMessage}`);
+    console.log("Use cache");
+    return res
+};
 
 const generatePng = async (input, fileName): Promise<void> => {
     console.log(`Generate png`);
@@ -69,8 +71,8 @@ const uploadPng = (path: string): Promise<void> => new Promise((resolve, reject)
     cloudinary.v2.uploader.upload(path, {
         effect: "trim", border: "10px_solid_white", use_filename: true, unique_filename: false
     }, (err, res) => {
-        if (err) return reject("Failed to upload PNG");
-        return resolve();
+        if (err) throw new Error("Failed to upload PNG");
+        resolve();
     });
 });
 
